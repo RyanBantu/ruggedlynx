@@ -9,6 +9,7 @@ import {
   formatLocalTime,
   type FieldWeather,
 } from './utils/weather'
+import logoUrl from './assets/logo.png'
 import './App.css'
 
 export default function App() {
@@ -94,8 +95,8 @@ export default function App() {
         <a className="logo" href="#top">
           <img
             className="logo-img"
-            src="/logo.png"
-            alt="RuggedLynx Trail Camera Company"
+            src={logoUrl}
+            alt="RuggedLynx Trail Cam Co."
           />
         </a>
         <nav className="top-nav">
@@ -114,8 +115,8 @@ export default function App() {
             <h1 className="brand-signal">
               <img
                 className="brand-logo"
-                src="/logo.png"
-                alt="RuggedLynx Trail Camera Company"
+                src={logoUrl}
+                alt="RuggedLynx Trail Cam Co."
               />
             </h1>
             {region ? <p className="hero-line">Sector acquired.</p> : null}
@@ -169,8 +170,8 @@ export default function App() {
         <a className="logo footer-logo" href="#top">
           <img
             className="logo-img logo-img--footer"
-            src="/logo.png"
-            alt="RuggedLynx Trail Camera Company"
+            src={logoUrl}
+            alt="RuggedLynx Trail Cam Co."
           />
         </a>
         <p>Trail imaging · sector intelligence · made for hunters.</p>

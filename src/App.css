@@ -113,12 +113,15 @@ body {
 
 .logo-img {
   display: block;
-  height: clamp(2.1rem, 3.5vw, 2.75rem);
+  height: clamp(2.6rem, 4.5vw, 3.4rem);
   width: auto;
+  max-width: min(280px, 55vw);
+  object-fit: contain;
 }
 
 .logo-img--footer {
-  height: 1.85rem;
+  height: 2.2rem;
+  max-width: 200px;
 }
 
 .top-nav {
@@ -195,7 +198,7 @@ body {
 }
 
 .page.is-locked .brand-logo {
-  width: min(220px, 70vw);
+  width: min(280px, 78vw);
 }
 
 .page.is-locked .lede {
@@ -221,14 +224,15 @@ body {
 }
 
 .brand-signal {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.85rem;
   line-height: 0;
 }
 
 .brand-logo {
   display: block;
-  width: min(340px, 88vw);
+  width: min(420px, 92vw);
   height: auto;
+  object-fit: contain;
 }
 
 .hero-line {
