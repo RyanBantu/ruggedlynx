@@ -118,9 +118,7 @@ export default function App() {
                 alt="RuggedLynx Trail Camera Company"
               />
             </h1>
-            <p className="hero-line">
-              {region ? 'Sector acquired.' : 'Geospatial intel for the stand.'}
-            </p>
+            {region ? <p className="hero-line">Sector acquired.</p> : null}
             <p className="lede">
               {region
                 ? 'Game profiles radiate from your pin — weather, time, and terrain update live.'
