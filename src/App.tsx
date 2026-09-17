@@ -92,11 +92,11 @@ export default function App() {
 
       <header className="topbar">
         <a className="logo" href="#top">
-          <span className="logo-mark" aria-hidden="true" />
-          <span className="logo-text">
-            RuggedLynx
-            <span className="logo-sub">FIELD SYSTEMS</span>
-          </span>
+          <img
+            className="logo-img"
+            src="/logo.png"
+            alt="RuggedLynx Trail Camera Company"
+          />
         </a>
         <nav className="top-nav">
           <span className="sys-chip">{region ? 'SECTOR · LOCKED' : 'SYS · ONLINE'}</span>
@@ -111,8 +111,16 @@ export default function App() {
       <main id="top" className="viewport">
         <section className="hero">
           <div className="hero-copy">
-            <p className="brand-signal">RuggedLynx</p>
-            <h1>{region ? 'Sector acquired.' : 'Geospatial intel for the stand.'}</h1>
+            <h1 className="brand-signal">
+              <img
+                className="brand-logo"
+                src="/logo.png"
+                alt="RuggedLynx Trail Camera Company"
+              />
+            </h1>
+            <p className="hero-line">
+              {region ? 'Sector acquired.' : 'Geospatial intel for the stand.'}
+            </p>
             <p className="lede">
               {region
                 ? 'Game profiles radiate from your pin — weather, time, and terrain update live.'
@@ -160,10 +168,13 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <span className="logo footer-logo">
-          <span className="logo-mark" aria-hidden="true" />
-          RuggedLynx
-        </span>
+        <a className="logo footer-logo" href="#top">
+          <img
+            className="logo-img logo-img--footer"
+            src="/logo.png"
+            alt="RuggedLynx Trail Camera Company"
+          />
+        </a>
         <p>Trail imaging · sector intelligence · made for hunters.</p>
       </footer>
     </div>
