@@ -19,29 +19,40 @@ type Props = {
 
 type PanelTab = 'conditions' | 'forecast' | 'birds' | 'tracking' | 'terrain'
 
-/** Place animal nodes on left/right arcs so lines radiate from the pin (center). */
-function layoutAnimals(count: number) {
-  const left = Math.ceil(count / 2)
-  const right = count - left
-  const nodes: Array<{ x: number; y: number; side: 'left' | 'right' }> = []
+type AnimalSlot = {
+  animal: Animal
+  side: 'left' | 'right'
+  /** Vertical center of the chip in %, for leader lines */
+  y: number
+  /** Horizontal anchor of the chip edge facing the globe, in % */
+  x: number
+}
 
-  for (let i = 0; i < left; i++) {
-    const t = left === 1 ? 0.5 : i / (left - 1)
-    nodes.push({
-      side: 'left',
-      x: 3 + (i % 2) * 2,
-      y: 6 + t * 48,
-    })
+/** Split species into left/right rails with even vertical spacing (no overlap). */
+function layoutAnimals(animals: Animal[]): AnimalSlot[] {
+  const leftCount = Math.ceil(animals.length / 2)
+  const rightCount = animals.length - leftCount
+  const bandTop = 12
+  const bandBottom = 88
+
+  const slotY = (index: number, count: number) => {
+    if (count <= 0) return 50
+    if (count === 1) return (bandTop + bandBottom) / 2
+    const t = (index + 0.5) / count
+    return bandTop + t * (bandBottom - bandTop)
   }
-  for (let i = 0; i < right; i++) {
-    const t = right === 1 ? 0.5 : i / (right - 1)
-    nodes.push({
-      side: 'right',
-      x: 74 - (i % 2) * 2,
-      y: 6 + t * 48,
-    })
-  }
-  return nodes
+
+  return animals.map((animal, i) => {
+    const onLeft = i < leftCount
+    const localIndex = onLeft ? i : i - leftCount
+    const count = onLeft ? leftCount : rightCount
+    return {
+      animal,
+      side: onLeft ? 'left' : 'right',
+      y: slotY(localIndex, count),
+      x: onLeft ? 18 : 82,
+    }
+  })
 }
 
 export function SectorBurst({
@@ -52,9 +63,10 @@ export function SectorBurst({
   localTime,
   localDate,
 }: Props) {
-  const animals = region.animals
-  const positions = useMemo(() => layoutAnimals(animals.length), [animals.length])
-  const origin = { x: 50, y: 42 }
+  const slots = useMemo(() => layoutAnimals(region.animals), [region])
+  const origin = { x: 50, y: 48 }
+  const leftSlots = slots.filter((s) => s.side === 'left')
+  const rightSlots = slots.filter((s) => s.side === 'right')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [tab, setTab] = useState<PanelTab>('conditions')
   const [panelOpen, setPanelOpen] = useState(true)
@@ -123,47 +135,73 @@ export function SectorBurst({
     <div className="sector-burst" aria-live="polite">
       <div className="burst-sky">
         <svg className="burst-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          {positions.map((pos, i) => {
-            const midX = pos.side === 'left' ? origin.x - 12 : origin.x + 12
+          {slots.map((slot) => {
+            const midX = slot.side === 'left' ? origin.x - 14 : origin.x + 14
+            const endX = slot.side === 'left' ? slot.x : slot.x
             return (
               <path
-                key={animals[i]?.id ?? i}
+                key={slot.animal.id}
                 className="burst-path"
-                d={`M ${origin.x} ${origin.y} Q ${midX} ${pos.y} ${pos.x + (pos.side === 'left' ? 20 : 0)} ${pos.y}`}
-                style={{ animationDelay: `${120 + i * 70}ms` }}
+                d={`M ${origin.x} ${origin.y} Q ${midX} ${slot.y} ${endX} ${slot.y}`}
+                style={{ animationDelay: `${120}ms` }}
               />
             )
           })}
           <circle className="burst-origin" cx={origin.x} cy={origin.y} r="1.2" />
         </svg>
 
-        <ul className="burst-animals">
-          {animals.map((animal, i) => {
-            const pos = positions[i]
-            if (!pos) return null
-            const open = expandedId === animal.id
-            return (
-              <li
-                key={animal.id}
-                className={`burst-node burst-${pos.side}${open ? ' is-expanded' : ''}${
-                  expandedId && !open ? ' is-dimmed' : ''
-                }`}
-                style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
-                  animationDelay: `${180 + i * 70}ms`,
-                  zIndex: open ? 20 : 5,
-                }}
-              >
-                <AnimalChip
-                  animal={animal}
-                  expanded={open}
-                  onToggle={() => setExpandedId((prev) => (prev === animal.id ? null : animal.id))}
-                />
-              </li>
-            )
-          })}
-        </ul>
+        <div className="burst-animals">
+          <ul className="burst-rail burst-rail-left" aria-label="Species left">
+            {leftSlots.map((slot, i) => {
+              const open = expandedId === slot.animal.id
+              return (
+                <li
+                  key={slot.animal.id}
+                  className={`burst-node burst-left${open ? ' is-expanded' : ''}${
+                    expandedId && !open ? ' is-dimmed' : ''
+                  }`}
+                  style={{
+                    animationDelay: `${160 + i * 60}ms`,
+                    zIndex: open ? 20 : 5,
+                  }}
+                >
+                  <AnimalChip
+                    animal={slot.animal}
+                    expanded={open}
+                    onToggle={() =>
+                      setExpandedId((prev) => (prev === slot.animal.id ? null : slot.animal.id))
+                    }
+                  />
+                </li>
+              )
+            })}
+          </ul>
+          <ul className="burst-rail burst-rail-right" aria-label="Species right">
+            {rightSlots.map((slot, i) => {
+              const open = expandedId === slot.animal.id
+              return (
+                <li
+                  key={slot.animal.id}
+                  className={`burst-node burst-right${open ? ' is-expanded' : ''}${
+                    expandedId && !open ? ' is-dimmed' : ''
+                  }`}
+                  style={{
+                    animationDelay: `${200 + i * 60}ms`,
+                    zIndex: open ? 20 : 5,
+                  }}
+                >
+                  <AnimalChip
+                    animal={slot.animal}
+                    expanded={open}
+                    onToggle={() =>
+                      setExpandedId((prev) => (prev === slot.animal.id ? null : slot.animal.id))
+                    }
+                  />
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       </div>
 
       <aside className={`field-panel${panelOpen ? ' is-open' : ' is-collapsed'}`}>
@@ -514,10 +552,10 @@ function AnimalChip({
           <strong>{animal.name}</strong>
           <span>{animal.code}</span>
         </div>
-        <p className={expanded ? 'is-full' : ''}>{animal.tip}</p>
+        {expanded ? <p className="is-full">{animal.tip}</p> : null}
         <div className="chip-foot">
           <span className="chip-peak">Peak {animal.peak}</span>
-          <span className="chip-expand-hint">{expanded ? 'Close' : 'Tap for intel'}</span>
+          <span className="chip-expand-hint">{expanded ? 'Close' : 'Tap'}</span>
         </div>
       </div>
 

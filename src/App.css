@@ -539,24 +539,50 @@ body {
   padding: 0;
   position: absolute;
   inset: 0;
+  display: grid;
+  grid-template-columns: minmax(148px, 22%) 1fr minmax(148px, 22%);
+  align-items: stretch;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.burst-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0.65rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 0.55rem;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.burst-rail-left {
+  grid-column: 1;
+}
+
+.burst-rail-right {
+  grid-column: 3;
 }
 
 .burst-node {
-  position: absolute;
-  width: min(230px, 44vw);
-  transform: translateY(-50%);
+  position: relative;
+  width: 100%;
+  flex: 0 1 auto;
+  min-height: 0;
   opacity: 0;
-  animation: node-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: node-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   pointer-events: auto;
   transition: opacity 0.25s ease, filter 0.25s ease;
 }
 
 .burst-node.is-expanded {
-  width: min(320px, 82vw);
+  z-index: 20;
 }
 
 .burst-node.is-dimmed {
-  opacity: 0.4;
+  opacity: 0.38;
   filter: saturate(0.75);
 }
 
@@ -566,18 +592,14 @@ body {
   filter: none;
 }
 
-.burst-node.burst-right {
-  transform: translateY(-50%);
-}
-
 @keyframes node-in {
   from {
     opacity: 0;
-    transform: translateY(-50%) scale(0.92);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(-50%) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -588,9 +610,9 @@ body {
   border: 1px solid var(--line-strong);
   background: rgba(12, 18, 14, 0.94);
   backdrop-filter: blur(14px);
-  padding: 0.7rem 0.75rem 0.75rem;
+  padding: 0.5rem 0.55rem 0.55rem;
   overflow: hidden;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -609,23 +631,24 @@ body {
 
 .animal-chip.is-open {
   border-color: var(--olive-bright);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  padding: 0.65rem 0.7rem 0.7rem;
 }
 
 .chip-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.4rem;
-  margin-bottom: 0.45rem;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .animal-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
+  width: 1.55rem;
+  height: 1.55rem;
   border: 1px solid var(--line-strong);
   color: var(--olive-bright);
   background: rgba(111, 143, 114, 0.14);
@@ -633,14 +656,14 @@ body {
 }
 
 .animal-mark-svg {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .chip-class {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.12em;
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
@@ -649,66 +672,61 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.3rem;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
 }
 
 .chip-title strong {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--ink);
+  line-height: 1.2;
 }
 
 .chip-title span {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
   color: var(--ink-dim);
   flex-shrink: 0;
 }
 
 .chip-body p {
-  margin: 0 0 0.45rem;
-  font-size: 0.82rem;
-  line-height: 1.45;
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: var(--ink-muted);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .chip-body p.is-full {
   display: block;
-  -webkit-line-clamp: unset;
-  overflow: visible;
 }
 
 .chip-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .chip-peak {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--olive-bright);
 }
 
 .chip-expand-hint {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.52rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--signal);
   border: 1px solid var(--line-strong);
-  padding: 0.15rem 0.35rem;
+  padding: 0.1rem 0.3rem;
 }
 
 .chip-extra {
@@ -1332,7 +1350,7 @@ body {
   display: none;
 }
 
-/* Mobile: stack animals in a compact strip above the panel instead of side arcs */
+/* Mobile: horizontal strip of compact chips */
 @media (max-width: 900px) {
   .burst-lines {
     display: none;
@@ -1345,24 +1363,29 @@ body {
     top: 0;
     bottom: auto;
     display: flex;
-    gap: 0.5rem;
-    padding: 0.5rem;
+    flex-direction: row;
+    gap: 0.55rem;
+    padding: 0.55rem 0.5rem;
     overflow-x: auto;
+    overflow-y: hidden;
     inset: auto 0 auto 0;
+    grid-template-columns: none;
+    align-items: stretch;
+    scrollbar-width: thin;
+  }
+
+  .burst-rail {
+    display: contents;
   }
 
   .burst-node {
-    position: relative;
-    left: auto !important;
-    top: auto !important;
-    width: 200px;
-    flex-shrink: 0;
-    transform: none;
+    width: 168px;
+    flex: 0 0 auto;
     animation-name: node-in-mobile;
   }
 
   .burst-node.is-expanded {
-    width: min(280px, 85vw);
+    width: min(240px, 78vw);
   }
 
   @keyframes node-in-mobile {
@@ -1389,14 +1412,6 @@ body {
   .panel-tab {
     font-size: 0.62rem;
     padding: 0.4rem 0.55rem;
-  }
-
-  .animal-chip {
-    padding: 0.75rem 0.8rem 0.8rem;
-  }
-
-  .chip-title strong {
-    font-size: 1.08rem;
   }
 
   .page.is-locked .hero-globe {
