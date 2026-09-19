@@ -6,11 +6,13 @@ import {
   type Region,
 } from '../data/animals'
 import type { FieldWeather } from '../utils/weather'
+import type { WildlifeFeeds } from '../utils/wildlifeFeeds'
 
 type Props = {
   region: Region
   weather: FieldWeather | null
   weatherError: string | null
+  wildlife: WildlifeFeeds | null
   localTime: string
   localDate: string
 }
@@ -44,6 +46,7 @@ export function SectorBurst({
   region,
   weather,
   weatherError,
+  wildlife,
   localTime,
   localDate,
 }: Props) {
@@ -124,22 +127,138 @@ export function SectorBurst({
             <span className="field-sub">
               {weather
                 ? `${weather.condition} · feels ${weather.feelsF}°`
-                : weatherError ?? 'Reading sensors…'}
+                : weatherError ?? 'Reading Open-Meteo…'}
             </span>
           </div>
           <div className="field-cell">
             <span className="field-label">Wind</span>
             <strong>{weather ? `${weather.windMph} mph` : '—'}</strong>
             <span className="field-sub">
-              {weather ? `${weather.windDir} · ${weather.humidity}% RH` : '—'}
+              {weather
+                ? `${weather.windDir}${
+                    weather.windGustMph != null ? ` · gust ${weather.windGustMph}` : ''
+                  } · ${weather.humidity}% RH`
+                : '—'}
             </span>
           </div>
           <div className="field-cell">
             <span className="field-label">Precip</span>
             <strong>{weather ? `${weather.precipProb}%` : '—'}</strong>
             <span className="field-sub">
-              {weather?.visibilityMi != null ? `Vis ${weather.visibilityMi} mi` : 'Chance next hour'}
+              {weather
+                ? `${weather.precipIn}" now${
+                    weather.visibilityMi != null ? ` · vis ${weather.visibilityMi} mi` : ''
+                  }`
+                : 'Chance next hour'}
             </span>
+          </div>
+        </div>
+
+        {weather ? (
+          <div className="weather-report">
+            <div className="weather-report-head">
+              <span className="field-label">Weather report</span>
+              <span className="weather-source">{weather.source}</span>
+            </div>
+            <p className="weather-hunt-tip">{weather.huntTip}</p>
+            <div className="weather-meta">
+              {weather.sunrise ? (
+                <span>
+                  Sunrise <strong>{weather.sunrise}</strong>
+                </span>
+              ) : null}
+              {weather.sunset ? (
+                <span>
+                  Sunset <strong>{weather.sunset}</strong>
+                </span>
+              ) : null}
+              {weather.cloudCover != null ? (
+                <span>
+                  Clouds <strong>{weather.cloudCover}%</strong>
+                </span>
+              ) : null}
+              {weather.pressureInHg != null ? (
+                <span>
+                  Pressure <strong>{weather.pressureInHg}"</strong>
+                </span>
+              ) : null}
+            </div>
+            {weather.daily.length ? (
+              <ul className="forecast-row">
+                {weather.daily.map((day) => (
+                  <li key={day.date}>
+                    <span className="forecast-day">{day.label}</span>
+                    <strong>
+                      {day.highF}° / {day.lowF}°
+                    </strong>
+                    <span className="forecast-cond">{day.condition}</span>
+                    <span className="forecast-extra">
+                      {day.precipProb}% · {day.windMph} mph
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="live-feeds">
+          <div className="live-feed">
+            <div className="weather-report-head">
+              <span className="field-label">Recent birds · eBird</span>
+              <span className="weather-source">{wildlife?.birdSource ?? 'eBird'}</span>
+            </div>
+            {!wildlife ? (
+              <p className="feed-empty">Pulling nearby checklists…</p>
+            ) : wildlife.birdError && !wildlife.birds.length ? (
+              <p className="feed-empty">{wildlife.birdError}</p>
+            ) : wildlife.birds.length ? (
+              <ul className="feed-list">
+                {wildlife.birds.map((b) => (
+                  <li key={`${b.sciName}-${b.obsDt}-${b.locName}`}>
+                    <strong>{b.name}</strong>
+                    <span>
+                      {b.howMany != null ? `${b.howMany} · ` : ''}
+                      {b.obsDt}
+                    </span>
+                    <span className="feed-loc">{b.locName}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="feed-empty">No recent public sightings in range.</p>
+            )}
+          </div>
+
+          <div className="live-feed">
+            <div className="weather-report-head">
+              <span className="field-label">Movement studies · Movebank</span>
+              <span className="weather-source">{wildlife?.studySource ?? 'Movebank'}</span>
+            </div>
+            {!wildlife ? (
+              <p className="feed-empty">Scanning public tracking studies…</p>
+            ) : (
+              <>
+                {wildlife.studyError ? <p className="feed-note">{wildlife.studyError}</p> : null}
+                {wildlife.studies.length ? (
+                  <ul className="feed-list">
+                    {wildlife.studies.map((s) => (
+                      <li key={s.id}>
+                        <a href={s.url} target="_blank" rel="noreferrer">
+                          {s.name}
+                        </a>
+                        <span>
+                          {s.taxa} · {s.distanceKm} km
+                          {s.individuals != null ? ` · ${s.individuals} animals` : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="feed-empty">No public studies near this sector.</p>
+                )}
+              </>
+            )}
           </div>
         </div>
 

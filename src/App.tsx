@@ -9,6 +9,7 @@ import {
   formatLocalTime,
   type FieldWeather,
 } from './utils/weather'
+import { fetchWildlifeFeeds, type WildlifeFeeds } from './utils/wildlifeFeeds'
 import logoUrl from './assets/logo.png'
 import './App.css'
 
@@ -19,6 +20,7 @@ export default function App() {
   const [isPending, startTransition] = useTransition()
   const [weather, setWeather] = useState<FieldWeather | null>(null)
   const [weatherError, setWeatherError] = useState<string | null>(null)
+  const [wildlife, setWildlife] = useState<WildlifeFeeds | null>(null)
   const [clock, setClock] = useState(() => Date.now())
   const inputId = useId()
 
@@ -32,12 +34,14 @@ export default function App() {
     if (!region) {
       setWeather(null)
       setWeatherError(null)
+      setWildlife(null)
       return
     }
 
     let cancelled = false
     setWeather(null)
     setWeatherError(null)
+    setWildlife(null)
 
     void fetchFieldWeather(region.lat, region.lon)
       .then((w) => {
@@ -45,6 +49,23 @@ export default function App() {
       })
       .catch(() => {
         if (!cancelled) setWeatherError('Weather feed offline')
+      })
+
+    void fetchWildlifeFeeds(region.lat, region.lon)
+      .then((w) => {
+        if (!cancelled) setWildlife(w)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWildlife({
+            birds: [],
+            birdError: 'Wildlife feeds offline',
+            birdSource: 'eBird',
+            studies: [],
+            studyError: 'Wildlife feeds offline',
+            studySource: 'Movebank',
+          })
+        }
       })
 
     return () => {
@@ -158,6 +179,7 @@ export default function App() {
                 region={region}
                 weather={weather}
                 weatherError={weatherError}
+                wildlife={wildlife}
                 localTime={localTime}
                 localDate={localDate}
               />
