@@ -143,7 +143,7 @@ export default function App() {
             {region ? <p className="hero-line">Sector acquired.</p> : null}
             <p className="lede">
               {region
-                ? 'Game profiles radiate from your pin — weather, time, and terrain update live.'
+                ? 'Tap a species chip for cam tips. Use the intel panel for weather, birds, tracks, and terrain.'
                 : 'Enter a ZIP. The globe locks on, then species and field conditions pop from the hit.'}
             </p>
 

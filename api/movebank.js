@@ -32,7 +32,7 @@ const MOVEBANK_SEEDS = [
 ]
 
 function fromSeeds(lat, lon, radiusKm) {
-  return MOVEBANK_SEEDS.map((s) => ({
+  const ranked = MOVEBANK_SEEDS.map((s) => ({
     id: s.id,
     name: s.name,
     taxa: s.taxa,
@@ -42,10 +42,13 @@ function fromSeeds(lat, lon, radiusKm) {
     individuals: null,
     public: true,
     url: `https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study${s.id}`,
-  }))
-    .filter((s) => s.distanceKm <= radiusKm)
-    .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, 8)
+  })).sort((a, b) => a.distanceKm - b.distanceKm)
+
+  // Prefer studies inside the requested radius; if the sparse seed catalog
+  // has none nearby (common when Movebank is rate-limited), still return the
+  // nearest public studies so Tracks is never an empty dead end.
+  const nearby = ranked.filter((s) => s.distanceKm <= radiusKm)
+  return (nearby.length ? nearby : ranked).slice(0, 8)
 }
 
 async function fetchLiveStudies(lat, lon, radiusKm) {
@@ -102,7 +105,7 @@ export default async function handler(req, res) {
 
   const lat = Number(req.query.lat)
   const lon = Number(req.query.lng ?? req.query.lon)
-  const radiusKm = Math.min(1200, Math.max(50, Number(req.query.radiusKm) || 500))
+  const radiusKm = Math.min(2000, Math.max(50, Number(req.query.radiusKm) || 500))
 
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
     res.status(400).json({ error: 'lat and lng required' })
@@ -118,11 +121,14 @@ export default async function handler(req, res) {
     })
   } catch {
     const studies = fromSeeds(lat, lon, radiusKm)
+    const nearest = studies[0]?.distanceKm
+    const beyondRadius = nearest != null && nearest > radiusKm
     res.status(200).json({
       studies,
       source: 'Movebank (cached public catalog)',
-      message:
-        'Live Movebank catalog unavailable or rate-limited — showing curated public studies near this sector.',
+      message: beyondRadius
+        ? `Live Movebank catalog is rate-limited — showing nearest curated public studies (${nearest}+ km).`
+        : 'Live Movebank catalog unavailable or rate-limited — showing curated public studies near this sector.',
     })
   }
 }

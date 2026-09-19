@@ -47,7 +47,7 @@ export async function fetchWildlifeFeeds(lat: number, lon: number): Promise<Wild
   const qs = `lat=${lat.toFixed(4)}&lng=${lon.toFixed(4)}`
   const [birdsRes, moveRes] = await Promise.allSettled([
     fetch(`/api/ebird?${qs}&dist=40&back=14&maxResults=12`),
-    fetch(`/api/movebank?${qs}&radiusKm=500`),
+    fetch(`/api/movebank?${qs}&radiusKm=1609`),
   ])
 
   let birds: BirdSighting[] = []

@@ -96,21 +96,37 @@ export function Globe({ target, highlight, statusLabel }: GlobeProps) {
     const mount = mountRef.current
     if (!mount) return
 
-    const width = mount.clientWidth || 600
-    const height = mount.clientHeight || 500
     let disposed = false
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100)
-    camera.position.set(0, 0.15, 3.55)
+    // Always render a square buffer so the Earth never stretches with the layout.
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
+    camera.position.set(0, 0.12, 3.45)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setSize(width, height)
+    const canvas = renderer.domElement
+    canvas.style.display = 'block'
+    canvas.style.flexShrink = '0'
+    mount.appendChild(canvas)
+
+    const fitSquare = () => {
+      if (!mount || disposed) return
+      const cw = mount.clientWidth || 1
+      const ch = mount.clientHeight || 1
+      // Leave a little padding so orbital rings aren't clipped.
+      const size = Math.max(160, Math.floor(Math.min(cw, ch) * 0.96))
+      camera.aspect = 1
+      camera.updateProjectionMatrix()
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.setSize(size, size, false)
+      canvas.style.width = `${size}px`
+      canvas.style.height = `${size}px`
+    }
+    fitSquare()
     renderer.setClearColor(0x000000, 0)
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.05
-    mount.appendChild(renderer.domElement)
 
     const stars = createStarfield()
     scene.add(stars)
@@ -291,20 +307,17 @@ export function Globe({ target, highlight, statusLabel }: GlobeProps) {
     }
     raf = requestAnimationFrame(animate)
 
-    const onResize = () => {
-      if (!mount) return
-      const w = mount.clientWidth
-      const h = mount.clientHeight
-      camera.aspect = w / h
-      camera.updateProjectionMatrix()
-      renderer.setSize(w, h)
-    }
-    window.addEventListener('resize', onResize)
+    const resizeObserver = new ResizeObserver(() => {
+      fitSquare()
+    })
+    resizeObserver.observe(mount)
+    window.addEventListener('resize', fitSquare)
 
     return () => {
       disposed = true
       cancelAnimationFrame(raf)
-      window.removeEventListener('resize', onResize)
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', fitSquare)
       texturesRef.current.forEach((t) => t.dispose())
       texturesRef.current = []
       renderer.dispose()
@@ -322,8 +335,8 @@ export function Globe({ target, highlight, statusLabel }: GlobeProps) {
       orbitMat.dispose()
       stars.geometry.dispose()
       ;(stars.material as THREE.Material).dispose()
-      if (mount.contains(renderer.domElement)) {
-        mount.removeChild(renderer.domElement)
+      if (mount.contains(canvas)) {
+        mount.removeChild(canvas)
       }
     }
   }, [])
